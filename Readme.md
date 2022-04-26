@@ -1,4 +1,4 @@
-## Progressive End-to-End Object Detection in Crowded Scenes (Deformable-DETR unofficial implementation)
+## Progressive End-to-End Object Detection in Crowded Scenes (Deformable-DETR implementation)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
