@@ -10,6 +10,10 @@ In this paper, we propose a new query-based detection framework for crowd detect
 depth of the decoding stage increases. Benefiting from the nature of the one-to-one label assignment rule, we propose a progressive predicting method to address the above issues. Specifically, we first select accepted queries prone to generate true positive predictions, then refine the rest
 noisy queries according to the previously accepted predictions. Experiments show that our method can significantly boost the performance of query-based detectors in crowded scenes. Equipped with our approach, Sparse RCNN achieves 92.0% AP, 41.4% MR^−2 and 83.2% JI on the challenging [CrowdHuman]() dataset, outperforming the box-based method MIP that specifies in handling crowded scenarios. Moreover, the proposed method, robust to crowdedness, can still obtain consistent improvements on moderately and slightly crowded datasets like CityPersons and COCO.
 
+### Links
+- Iter Sparse R-CNN [[repo](https://github.com/megvii-research/Iter-E2EDET)]
+- CVPR 2022 paper [[paper](https://arxiv.org/abs/2203.07669)]
+
 ## Models
 
 Experiments of different methods were conducted on CrowdHuman. All approaches take R-50 as the backbone.
