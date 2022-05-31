@@ -70,6 +70,7 @@ def get_args_parser():
                         help="Number of query slots")
     parser.add_argument('--dec_n_points', default=4, type=int)
     parser.add_argument('--enc_n_points', default=4, type=int)
+    parser.add_argument('--use_checkpoint', action='store_true')
 
     # * Segmentation
     parser.add_argument('--masks', action='store_true',
@@ -163,7 +164,13 @@ def processor(result_queue, dataset, device, model_file, args):
         base_ds = get_coco_api_from_dataset(dataset_val)
 
     checkpoint = torch.load(model_file, map_location='cpu')
-    model_without_ddp.load_state_dict(checkpoint['model'])
+    missing_keys, unexpected_keys = model_without_ddp.load_state_dict(checkpoint['model'], strict=False)
+    unexpected_keys = [k for k in unexpected_keys if not (k.endswith('total_params') or k.endswith('total_ops'))]
+    if utils.is_main_process():
+        if len(missing_keys) > 0:
+            print('Missing Keys: {}'.format(missing_keys))
+        if len(unexpected_keys) > 0:
+            print('Unexpected Keys: {}'.format(unexpected_keys))
  
     model.eval()
     result_list, n = [], len(data_loader)

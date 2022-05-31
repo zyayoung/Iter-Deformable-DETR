@@ -11,6 +11,7 @@
 Backbone modules.
 """
 from collections import OrderedDict
+from detr.swin_transformer import SwinTransformer
 
 import torch
 import torch.nn.functional as F
@@ -109,6 +110,67 @@ class Backbone(BackboneBase):
             self.strides[-1] = self.strides[-1] // 2
 
 
+class SwinTrBackbone(SwinTransformer):
+    _config = {
+        "swin-t": ("swin_tiny_patch4_window7_224.pth", 96, [2, 2, 6, 2], [3, 6, 12, 24], 7),
+        "swin-l": ("swin_large_patch4_window7_224_22k.pth", 192, [2, 2, 18, 2], [6, 12, 24, 48], 7),
+        "swin-l-384": ("swin_large_patch4_window12_384_22kto1k.pth", 192, [2, 2, 18, 2], [6, 12, 24, 48], 12),
+    }
+
+    def __init__(self, backbone, use_checkpoint=False):
+        weights, embed_dim, depths, num_heads, window_size = SwinTrBackbone._config[backbone]
+        super().__init__(
+            embed_dim=embed_dim,
+            depths=depths,
+            num_heads=num_heads,
+            window_size=window_size,
+            out_indices=(1, 2, 3),
+            use_checkpoint=use_checkpoint
+        )
+        if is_main_process():
+            super().init_weights(weights)
+
+        self.strides = [8, 16, 32]
+        self.num_channels = [embed_dim * 2 ** c for c in range(1, 4)]
+
+    def forward(self, tensor_list: NestedTensor):
+        xs = self._forward_impl(tensor_list.tensors)
+        out: Dict[str, NestedTensor] = {}
+        for name, x in xs.items():
+            m = tensor_list.mask
+            assert m is not None
+            mask = F.interpolate(m[None].float(), size=x.shape[-2:]).to(torch.bool)[0]
+            out[name] = NestedTensor(x, mask)
+        return out
+
+    def _forward_impl(self, x):
+        """Forward function."""
+        x = self.patch_embed(x)
+
+        Wh, Ww = x.size(2), x.size(3)
+        if self.ape:
+            # interpolate the position embedding to the corresponding size
+            absolute_pos_embed = F.interpolate(self.absolute_pos_embed, size=(Wh, Ww), mode='bicubic')
+            x = (x + absolute_pos_embed).flatten(2).transpose(1, 2)  # B Wh*Ww C
+        else:
+            x = x.flatten(2).transpose(1, 2)
+        x = self.pos_drop(x)
+
+        outs = {}
+        for i in range(self.num_layers):
+            layer = self.layers[i]
+            x_out, H, W, x, Wh, Ww = layer(x, Wh, Ww)
+
+            if i in self.out_indices:
+                norm_layer = getattr(self, f'norm{i}')
+                x_out = norm_layer(x_out)
+
+                out = x_out.view(-1, H, W, self.num_features[i]).permute(0, 3, 1, 2).contiguous()
+                outs[i] = out
+
+        return outs
+
+
 class Joiner(nn.Sequential):
     def __init__(self, backbone, position_embedding):
         super().__init__(backbone, position_embedding)
@@ -133,6 +195,12 @@ def build_backbone(args):
     position_embedding = build_position_encoding(args)
     train_backbone = args.lr_backbone > 0
     return_interm_layers = args.masks or (args.num_feature_levels > 1)
-    backbone = Backbone(args.backbone, train_backbone, return_interm_layers, args.dilation)
+    if not args.backbone.startswith("swin"):
+        backbone = Backbone(args.backbone, train_backbone, return_interm_layers, args.dilation)
+    else:
+        assert not args.dilation
+        assert return_interm_layers
+        assert train_backbone
+        backbone = SwinTrBackbone(args.backbone, args.use_checkpoint)
     model = Joiner(backbone, position_embedding)
     return model

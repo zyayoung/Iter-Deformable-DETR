@@ -82,6 +82,7 @@ def get_args_parser():
                         help="Number of query slots")
     parser.add_argument('--dec_n_points', default=4, type=int)
     parser.add_argument('--enc_n_points', default=4, type=int)
+    parser.add_argument('--use_checkpoint', action='store_true')
 
     # * Segmentation
     parser.add_argument('--masks', action='store_true',
@@ -212,7 +213,7 @@ def main(args):
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, args.lr_drop)
 
     if args.distributed:
-        model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu], find_unused_parameters=True)
+        model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
         model_without_ddp = model.module
 
     if args.frozen_weights is not None:

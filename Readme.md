@@ -1,6 +1,7 @@
 ## Progressive End-to-End Object Detection in Crowded Scenes (Deformable-DETR implementation)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/progressive-end-to-end-object-detection-in/object-detection-on-crowdhuman-full-body)](https://paperswithcode.com/sota/object-detection-on-crowdhuman-full-body?p=progressive-end-to-end-object-detection-in)
 
 ![](https://github.com/megvii-research/Iter-E2EDET/raw/main/readme/fig.jpg)
 
@@ -18,12 +19,14 @@ noisy queries according to the previously accepted predictions. Experiments show
 
 Experiments of different methods were conducted on CrowdHuman. All approaches take R-50 as the backbone.
 Method | #queries | AP | MR | JI 
-:---:|:---:|:---:|:---:|:---:
-[CrowdDet](https://openaccess.thecvf.com/content_CVPR_2020/papers/Chu_Detection_in_Crowded_Scenes_One_Proposal_Multiple_Predictions_CVPR_2020_paper.pdf) | -- | 90.7 | 41.4 | 82.4
+:--- |:---:|:---:|:---:|:---:
+CrowdDet [[paper](https://openaccess.thecvf.com/content_CVPR_2020/papers/Chu_Detection_in_Crowded_Scenes_One_Proposal_Multiple_Predictions_CVPR_2020_paper.pdf)] | -- | 90.7 | 41.4 | 82.4
 Sparse RCNN | 500 | 90.7 | 44.7 | 81.4 
 Deformable DETR | 1000 | 91.5 | 43.7 | 83.1
-Sparse RCNN + Ours | 500 | 92.0 | 41.4 | 83.2
-Deformable DETR + Ours | 1000 | 92.1 | 41.5 | 84.0
+Sparse RCNN + Ours [[repo](https://github.com/megvii-research/Iter-E2EDET)] | 500 | 92.0 | 41.4 | 83.2
+Deformable DETR + Ours (this repo) | 1000 | 92.1 | 41.5 | 84.0
+Deformable DETR + Swin-L + Ours (this repo) | 1000 | **94.1** | **37.7** | **87.1**
+
 ## Installation
 The codebases are built on top of [Deformable-DETR](https://github.com/fundamentalvision/Deformable-DETR) and [Iter-E2EDET](https://github.com/megvii-research/Iter-E2EDET).
 
@@ -36,11 +39,23 @@ The codebases are built on top of [Deformable-DETR](https://github.com/fundament
 ```bash
 bash exps/aps.sh
 ```
+or for Swin-L backbone:
+```bash
+wget https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_large_patch4_window7_224_22k.pth
+bash exps/aps_swinl.sh
+```
 
 4. Evaluate Iter Deformable-DETR. You can download the pre-trained model from [here](https://drive.google.com/file/d/1D8nzWLjZ-eHZG-0pNW0iDm5t9wNVsQSp/view?usp=sharing) for direct evaluation.
 ```bash
+# checkpoint path: ./output/model_dump/aps/checkpoint-49.pth
 bash exps/aps_test.sh 49
 # AP: 0.9216, MR: 0.4140, JI: 0.8389, Recall: 0.9635
+```
+or with Swin-L backbone from [here](https://drive.google.com/file/d/11lw3lkIX1jJsqKWOu7vuSIzKtkbfrh3a/view?usp=sharing):
+```bash
+# checkpoint path: ./output/model_dump/aps_swinl/checkpoint-49.pth
+bash exps/aps_swinl_test.sh 49
+# AP: 0.9406, MR: 0.3768, JI: 0.8707, Recall: 0.9707
 ```
 
 ## License
