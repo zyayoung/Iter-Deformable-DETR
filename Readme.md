@@ -68,10 +68,11 @@ Iter Deformable-DETR is released under MIT License.
 If you use our work in your research or wish to refer to the baseline results published here, please use the following BibTeX entries:
 
 ```BibTeX
-@article{2022iterdetr,
-  title   =  {Progressive End-to-End Object Detection in Crowded Scenes},
-  author  =  {Anlin Zheng and Yuang Zhang and Xiangyu Zhang and Xiaojuan Qi and Jian Sun},
-  journal =  {arXiv preprint arXiv:arXiv:2203.07669v1},
-  year    =  {2022}
+@inproceedings{zheng2022progressive,
+  title={Progressive End-to-End Object Detection in Crowded Scenes},
+  author={Zheng, Anlin and Zhang, Yuang and Zhang, Xiangyu and Qi, Xiaojuan and Sun, Jian},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={857--866},
+  year={2022}
 }
 ```
